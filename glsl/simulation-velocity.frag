@@ -4,31 +4,44 @@
 
 // varying vec2 uv;
 
-// uniform float time;
+uniform float t;
 
 // uniform sampler2D texturePositions;
 // uniform sampler2D textureVelocities;
 // uniform vec2 mouse;
+
+const float PI = 3.1415926535897932384626433832795;
+
+vec2 rotate(vec2 v, float a) {
+	float s = sin(a);
+	float c = cos(a);
+	mat2 m = mat2(c, -s, s, c);
+
+	return m * v;
+}
 
 void main() {
   vec2 uv = gl_FragCoord.xy / resolution.xy;
   vec3 currentPos = texture2D(texturePositions, uv).xyz;
   vec3 currentVel = texture2D(textureVelocities, uv).xyz;
 
-  float curlMod  = 0.015;
-  float steerMod = 0.1;
-  // float timeMod  = 0.2;
-  // float time     = 0.2;
+  float curlMod = 0.03;
+  float steerMod = 0.2;
 
-  vec3 curl = curlNoise(currentPos * curlMod);
+  vec3 tMod = vec3(t) * 0.1;
+
+  vec3 curl = curlNoise((currentPos + tMod) * curlMod);
   vec3 steer = curl * steerMod;
 
-  // float dist = length(vec2(currentPos.x, currentPos.y) / 512.0 - mouse) * 1.0;
-  // steer = mix(steer, vec3(mouse, 0.0), (1.0 / dist) * 0.04);
+  float d = min(distance(currentPos.xy, vec2(0.0)) / 10.0, 1.0);
 
-  vec3 newVel = currentVel + steer;
+  vec2 rot = rotate(currentPos.xy, 0.49 * PI);
 
-  float limit = 0.8;
+  vec3 circleSteer = vec3(rot.x, rot.y, 0.0);
+
+  vec3 newVel = currentVel + mix(steer, circleSteer, 0.01 * d);
+
+  float limit = 1.2;
 
   if (length(newVel) > limit) {
     newVel = normalize(newVel) * limit;

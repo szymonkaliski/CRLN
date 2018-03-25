@@ -20,7 +20,7 @@ const camera = new THREE.PerspectiveCamera(
   1000
 );
 
-camera.position.z = -200;
+camera.position.z = -300;
 
 // orbit controls
 const controls = new OrbitControls(camera, renderer.domElement);
@@ -31,7 +31,7 @@ controls.enableZoom = true;
 const scene = new THREE.Scene();
 
 // gpu compute
-const gpuSize = 512;
+const gpuSize = 1024;
 const gpuCompute = new GPUComputationRender(gpuSize, gpuSize, renderer);
 
 const randomSpherePoint = (r = 100) => {
@@ -58,7 +58,7 @@ const positionTexture = gpuCompute.createTexture();
 const velocityTexture = gpuCompute.createTexture();
 
 fillTexture(positionTexture, (arr, i) => {
-  const randomPoint = randomSpherePoint(1);
+  const randomPoint = randomSpherePoint(30);
 
   arr[i + 0] = randomPoint.x;
   arr[i + 1] = randomPoint.y;
@@ -96,6 +96,7 @@ if (error !== null) {
 // particles
 const renderMaterial = new THREE.ShaderMaterial({
   uniforms: {
+    t: { value: 0 },
     texturePositions: { value: null }
   },
   vertexShader: glslify("./glsl/render.vert"),
@@ -125,13 +126,26 @@ scene.add(particles);
 const loop = () => {
   requestAnimationFrame(loop);
 
+  const currentT = performance.now();
+
   gpuCompute.compute();
 
   renderMaterial.uniforms.texturePositions.value = gpuCompute.getCurrentRenderTarget(
     positionVar
   ).texture;
 
+  renderMaterial.uniforms.t.value = currentT;
+
   renderer.render(scene, camera);
 };
 
 loop();
+
+const onWindowResize = () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+
+  renderer.setSize(window.innerWidth, window.innerHeight);
+};
+
+window.addEventListener("resize", onWindowResize, false);

@@ -14,7 +14,7 @@ void main() {
 
   vec3 center = vec3(0.0);
 
-  if (distance(newPos, center) < 400.0) {
+  if (distance(newPos, center) < 200.0) {
     gl_FragColor = vec4(newPos, 1.0);
   }
   else {
