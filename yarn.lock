@@ -1046,6 +1046,10 @@ glsl-resolve@0.0.1:
     resolve "^0.6.1"
     xtend "^2.1.2"
 
+glsl-scale-linear@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/glsl-scale-linear/-/glsl-scale-linear-1.0.0.tgz#a27d0a501986c45e76d4820865b8aa2a4ba84df8"
+
 glsl-token-assignments@^2.0.0:
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/glsl-token-assignments/-/glsl-token-assignments-2.0.2.tgz#a5d82ab78499c2e8a6b83cb69495e6e665ce019f"

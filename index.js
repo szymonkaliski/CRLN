@@ -55,6 +55,7 @@ const fillTexture = (texture, callback) => {
 };
 
 const positionTexture = gpuCompute.createTexture();
+const orgPositionTexture = gpuCompute.createTexture();
 const velocityTexture = gpuCompute.createTexture();
 
 fillTexture(positionTexture, (arr, i) => {
@@ -64,6 +65,13 @@ fillTexture(positionTexture, (arr, i) => {
   arr[i + 1] = randomPoint.y;
   arr[i + 2] = randomPoint.z;
   arr[i + 3] = 1;
+});
+
+fillTexture(orgPositionTexture, (arr, i) => {
+  arr[i + 0] = positionTexture.image.data[i + 0]
+  arr[i + 1] = positionTexture.image.data[i + 1]
+  arr[i + 2] = positionTexture.image.data[i + 2]
+  arr[i + 3] = positionTexture.image.data[i + 3]
 });
 
 fillTexture(velocityTexture, (arr, i) => {
@@ -85,6 +93,9 @@ const velocityVar = gpuCompute.addVariable(
   velocityTexture
 );
 
+velocityVar.material.uniforms.t = { value: 0 };
+positionVar.material.uniforms.orgPositions = { value: orgPositionTexture };
+
 gpuCompute.setVariableDependencies(velocityVar, [velocityVar, positionVar]);
 gpuCompute.setVariableDependencies(positionVar, [velocityVar, positionVar]);
 
@@ -96,7 +107,6 @@ if (error !== null) {
 // particles
 const renderMaterial = new THREE.ShaderMaterial({
   uniforms: {
-    t: { value: 0 },
     texturePositions: { value: null }
   },
   vertexShader: glslify("./glsl/render.vert"),
@@ -134,7 +144,7 @@ const loop = () => {
     positionVar
   ).texture;
 
-  renderMaterial.uniforms.t.value = currentT;
+  velocityVar.material.uniforms.t = { value: currentT };
 
   renderer.render(scene, camera);
 };
