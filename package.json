@@ -16,6 +16,7 @@
     "glsl-scale-linear": "^1.0.0",
     "glslify": "^6.1.1",
     "three": "^0.91.0",
-    "three-orbitcontrols": "^2.0.0"
+    "three-orbitcontrols": "^2.0.0",
+    "three-vignette-background": "^1.0.3"
   }
 }

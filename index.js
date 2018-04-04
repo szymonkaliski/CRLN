@@ -1,9 +1,20 @@
 const THREE = require("three");
-const OrbitControls = require("three-orbitcontrols");
 const glslify = require("glslify");
+const createBackground = require("three-vignette-background");
 
 global.THREE = THREE;
+
+require("three/examples/js/shaders/BokehShader");
+require("three/examples/js/shaders/CopyShader");
+
+require("three/examples/js/postprocessing/EffectComposer");
+require("three/examples/js/postprocessing/BokehPass");
+require("three/examples/js/postprocessing/RenderPass");
+require("three/examples/js/postprocessing/ShaderPass");
+
 const GPUComputationRender = require("./lib/gpu-computation-renderer");
+
+const makeCameraMouseMove = require("./mouse-camera");
 
 // renderer
 const renderer = new THREE.WebGLRenderer();
@@ -20,18 +31,20 @@ const camera = new THREE.PerspectiveCamera(
   1000
 );
 
-camera.position.z = -300;
-
-// orbit controls
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableDamping = false;
-controls.enableZoom = true;
+const { update: updateCamera } = makeCameraMouseMove(camera);
 
 // scene
 const scene = new THREE.Scene();
+const background = createBackground({
+  colors: [0x333333, 0x111111],
+  grainScale: 0.001,
+  noiseAlpha: 0.01,
+  aspectCorrection: true
+});
+scene.add(background);
 
 // gpu compute
-const gpuSize = 1024;
+const gpuSize = 512;
 const gpuCompute = new GPUComputationRender(gpuSize, gpuSize, renderer);
 
 const randomSpherePoint = (r = 100) => {
@@ -68,10 +81,10 @@ fillTexture(positionTexture, (arr, i) => {
 });
 
 fillTexture(orgPositionTexture, (arr, i) => {
-  arr[i + 0] = positionTexture.image.data[i + 0]
-  arr[i + 1] = positionTexture.image.data[i + 1]
-  arr[i + 2] = positionTexture.image.data[i + 2]
-  arr[i + 3] = positionTexture.image.data[i + 3]
+  arr[i + 0] = positionTexture.image.data[i + 0];
+  arr[i + 1] = positionTexture.image.data[i + 1];
+  arr[i + 2] = positionTexture.image.data[i + 2];
+  arr[i + 3] = positionTexture.image.data[i + 3];
 });
 
 fillTexture(velocityTexture, (arr, i) => {
@@ -133,10 +146,27 @@ geometry.addAttribute("position", new THREE.BufferAttribute(vertices, 3));
 const particles = new THREE.Points(geometry, renderMaterial);
 scene.add(particles);
 
+// postprocessing
+const effectComposer = new THREE.EffectComposer(renderer);
+
+const renderPass = new THREE.RenderPass(scene, camera);
+effectComposer.addPass(renderPass);
+
+const bokehPass = new THREE.BokehPass(scene, camera, {
+  aperture: 1.2 * 0.001,
+  maxblur: 10,
+  focus: 1.5
+});
+
+bokehPass.renderToScreen = true;
+effectComposer.addPass(bokehPass);
+
 const loop = () => {
   requestAnimationFrame(loop);
 
   const currentT = performance.now();
+
+  updateCamera();
 
   gpuCompute.compute();
 
@@ -146,7 +176,8 @@ const loop = () => {
 
   velocityVar.material.uniforms.t = { value: currentT };
 
-  renderer.render(scene, camera);
+  effectComposer.render();
+  // renderer.render(scene, camera);
 };
 
 loop();
