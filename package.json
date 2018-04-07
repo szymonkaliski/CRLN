@@ -4,12 +4,16 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "budo index.js --live --port=3000 -- -t glslify"
+    "start": "budo index.js:bundle.js --live --port 3000 -- -t glslify",
+    "dist": "mkdir dist 2> /dev/null; browserify -t [ babelify --presets [ es2015 ] ] -t glslify index.js | uglifyjs > dist/bundle.js; cp -f index.html dist/ 2> /dev/null",
+    "deploy": "npm run dist && gh-pages -d dist/"
   },
   "author": "Szymon Kaliski <hi@szymonkaliski.com> (http://szymonkaliski.com)",
   "license": "MIT",
   "devDependencies": {
-    "budo": "^11.2.0"
+    "babelify": "^8.0.0",
+    "budo": "^11.2.0",
+    "uglifyjs": "^2.4.11"
   },
   "dependencies": {
     "glsl-curl-noise": "^0.0.4",

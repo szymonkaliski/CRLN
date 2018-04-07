@@ -16,6 +16,9 @@ const GPUComputationRender = require("./lib/gpu-computation-renderer");
 
 const makeCameraMouseMove = require("./mouse-camera");
 
+let loaderDiv = document.querySelector(".loader");
+const OPACITY_K = 0.9;
+
 // renderer
 const renderer = new THREE.WebGLRenderer();
 renderer.setClearColor(0x222222);
@@ -162,6 +165,15 @@ bokehPass.renderToScreen = true;
 effectComposer.addPass(bokehPass);
 
 const loop = () => {
+  if (loaderDiv && loaderDiv.style.opacity > 0) {
+    loaderDiv.style.opacity *= OPACITY_K;
+
+    if (loaderDiv.style.opacity < 0.01) {
+      document.body.removeChild(loaderDiv);
+      loaderDiv = undefined;
+    }
+  }
+
   requestAnimationFrame(loop);
 
   const currentT = performance.now();
