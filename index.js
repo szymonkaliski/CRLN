@@ -47,7 +47,7 @@ const background = createBackground({
 scene.add(background);
 
 // gpu compute
-const gpuSize = 1024;
+const gpuSize = 512;
 const gpuCompute = new GPUComputationRender(gpuSize, gpuSize, renderer);
 
 const randomSpherePoint = (r = 100) => {

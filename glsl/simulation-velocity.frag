@@ -1,3 +1,5 @@
+precision highp float;
+
 #pragma glslify: curlNoise = require(glsl-curl-noise)
 #pragma glslify: scale = require(glsl-scale-linear)
 
