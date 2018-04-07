@@ -44,7 +44,7 @@ const background = createBackground({
 scene.add(background);
 
 // gpu compute
-const gpuSize = 512;
+const gpuSize = 1024;
 const gpuCompute = new GPUComputationRender(gpuSize, gpuSize, renderer);
 
 const randomSpherePoint = (r = 100) => {
@@ -72,7 +72,7 @@ const orgPositionTexture = gpuCompute.createTexture();
 const velocityTexture = gpuCompute.createTexture();
 
 fillTexture(positionTexture, (arr, i) => {
-  const randomPoint = randomSpherePoint(30);
+  const randomPoint = randomSpherePoint(10);
 
   arr[i + 0] = randomPoint.x;
   arr[i + 1] = randomPoint.y;
